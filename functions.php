@@ -66,4 +66,33 @@ function checkUser($email, $password) {
 
     }
 }
+
+function addPost($userId, $title, $body, $filePath = false) {
+    $userDb = fopen("db/$userId.db", "a+"); //пост юзера помещается в отдельный файл для каждого юзера
+    if (!$userDb){
+        return false;
+    }
+
+    /*добавление изображения в пост, генерация имени файла, перемещение его в папку img*/
+    $name = false;
+    if (
+        $filePath &&
+        is_uploaded_file($filePath)
+    ) {
+        //TODO: check image (getimagesize)
+        $pathInfo = pathinfo($filePath); // функция генерирует путь к файлу
+        $name = "img_" . time() . "." . $pathInfo['extension'];
+
+        move_uploaded_file($filePath, "img/" . $name); // перемещает файл в папку img
+    }
+
+    fwrite($userDb, json_encode([
+        'title' => $title,
+        'body' => $body,
+        'image' => $name,
+        'createdAt' => date("d.m.Y H:i:s"),
+    ]));
+    fclose($userDb);
+    return true;
+}
 ?>
